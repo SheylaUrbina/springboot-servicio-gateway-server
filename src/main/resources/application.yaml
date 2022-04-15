@@ -1,0 +1,37 @@
+spring:
+  cloud:
+    gateway:
+      routes:
+      - id: servicios-productos
+        uri: lb://servicio-productos
+        predicates:
+          - Path=/api/productos/**
+          #Quitar estos predicates/restricciones para no estar add en las pruebas
+          #- Header= token, \d+
+          #- Header=Content-Type,application/json
+          #- Method=GET, POST
+          #- Query=color, verde #aqui si se quiere aceptar cualquier valor, solo se quita el valor verde y se deja vacio
+          #- Cookie=color, azul  
+        filters:
+          - StripPrefix=2
+          #- name: Ejemplo #corresponde al prefijo de la clase filtro EjemploGatewayFilterFactory 
+          #  args: #estos son los que se pasan en la clase configuracion del EjemploGatewayFilterFactory
+          #    mensaje: mensaje personalizado 1419
+          #    cookieNombre: usuario
+          #    cookieValor: surbina
+         #Otra forma de presentar el valor name es:
+         # - Ejemplo=mensaje personalizado 1419, usuario, surbina
+         #Podemos cambiar el nombre Ejemplo del prefijo de la clase EjemploGatewayFilterFactory, por otro, pero antes se debe configurar en
+         #la clase EjemploGatewayFilterFactory utilizando la clase public String name, en este caso se le dio el nombre de EjemploCookie.
+          - EjemploCookie=mensaje personalizado 1419, usuario, surbina 
+         #Sin embargo para que esto sea valido debemos ir a la clase e implementar un método, para dar el orden a estos argumentos     
+      - id: servicios-items
+        uri: lb://servicio-items
+        predicates:
+          - Path=/api/items/**  
+        filters:
+          - StripPrefix=2
+          - AddRequestHeader=token-request, 123456
+          - AddResponseHeader=token-response, 12345678
+          - SetResponseHeader=Content-Type, text/plain
+          - AddRequestParameter=nombre, sheyla     
