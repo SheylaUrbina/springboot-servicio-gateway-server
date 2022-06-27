@@ -1,3 +1,24 @@
+resilience4j:
+  circuitbreaker:
+    configs:
+      defecto:
+        sliding-window-size: 6
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 20s
+        permitted-number-of-calls-in-half-open-state: 4
+        slow-call-rate-threshold: 50
+        slow-call-duration-threshold: 2s
+    instances:
+      productos:
+        base-config: defecto
+  timelimiter:
+    configs:
+      defecto:
+        timeout-duration: 2s
+    instances:
+      productos:
+        base-config: defecto
+        
 spring:
   cloud:
     gateway:
@@ -7,12 +28,18 @@ spring:
         predicates:
           - Path=/api/productos/**
           #Quitar estos predicates/restricciones para no estar add en las pruebas
+          #https://docs.spring.io/spring-cloud-gateway/docs/current/reference/html/#gateway-request-predicates-factories
           #- Header= token, \d+
           #- Header=Content-Type,application/json
           #- Method=GET, POST
           #- Query=color, verde #aqui si se quiere aceptar cualquier valor, solo se quita el valor verde y se deja vacio
           #- Cookie=color, azul  
         filters:
+          - name: CircuitBreaker
+            args:
+              name: productos
+              statusCodes: 500
+              fallbackUri: forward:/api/items/ver/9/cantidad/5
           - StripPrefix=2
           #- name: Ejemplo #corresponde al prefijo de la clase filtro EjemploGatewayFilterFactory 
           #  args: #estos son los que se pasan en la clase configuracion del EjemploGatewayFilterFactory
@@ -27,11 +54,11 @@ spring:
          #Sin embargo para que esto sea valido debemos ir a la clase e implementar un método, para dar el orden a estos argumentos     
       - id: servicios-items
         uri: lb://servicio-items
-        predicates:
+        predicates: #reglas, restricciones del request, es decir para q se ejecute el endpoint tiene q consumir ciertas condiciones. 
           - Path=/api/items/**  
         filters:
           - StripPrefix=2
-          - AddRequestHeader=token-request, 123456
-          - AddResponseHeader=token-response, 12345678
-          - SetResponseHeader=Content-Type, text/plain
-          - AddRequestParameter=nombre, sheyla     
+          #- AddRequestHeader=token-request, 123456 # se visualiza en el request
+          #- AddResponseHeader=token-response, 12345678
+          #- SetResponseHeader=Content-Type, text/plain
+          #- AddRequestParameter=nombre, sheyla    # se visualiza en el request 

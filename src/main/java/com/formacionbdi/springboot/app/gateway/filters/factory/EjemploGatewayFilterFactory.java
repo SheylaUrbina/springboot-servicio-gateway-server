@@ -28,8 +28,10 @@ public class EjemploGatewayFilterFactory extends AbstractGatewayFilterFactory<Ej
 	public GatewayFilter apply(Configuracion config) {
 		
 		return (exchange,chain)->{
+			//Ejecutando filtro pre gateway filter factory
 			logger.info("Ejecutando pre gateway filter factory: "+ config.mensaje);
 			return chain.filter(exchange).then(Mono.fromRunnable(()->{
+				//Ejecutando filtro post gateway filter factory
 				Optional.ofNullable(config.cookieValor).ifPresent(cookie ->{
 					exchange.getResponse().addCookie(ResponseCookie.from(config.cookieNombre, cookie).build());
 				});

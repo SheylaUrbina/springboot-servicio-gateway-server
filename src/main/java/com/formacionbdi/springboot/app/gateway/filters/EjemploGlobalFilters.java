@@ -14,27 +14,32 @@ import org.springframework.web.server.ServerWebExchange;
 
 import reactor.core.publisher.Mono;
 
-@Component
+@Component //para registrarlo como un beans
 public class EjemploGlobalFilters implements GlobalFilter, Ordered{
 
+
 	private final Logger logger = LoggerFactory.getLogger(EjemploGlobalFilters.class);
+	
 	@Override
 	public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-		logger.info("Ejecutando filtro pre");
-		exchange.getRequest().mutate().headers(h -> h.add("token", "1419"));
+		logger.info("ejecutando filtro pre");
+		exchange.getRequest().mutate().headers(h -> h.add("token", "123456"));
 		
-		return chain.filter(exchange).then(Mono.fromRunnable(()->{
-			logger.info("Ejecutando filtro post");
+		return chain.filter(exchange).then(Mono.fromRunnable(() -> {
+			logger.info("ejecutando filtro post");
+			
 			Optional.ofNullable(exchange.getRequest().getHeaders().getFirst("token")).ifPresent(valor -> {
 				exchange.getResponse().getHeaders().add("token", valor);
 			});
+			
 			exchange.getResponse().getCookies().add("color", ResponseCookie.from("color", "rojo").build());
-			//exchange.getResponse().getHeaders().setContentType(MediaType.TEXT_PLAIN);
+			// exchange.getResponse().getHeaders().setContentType(MediaType.TEXT_PLAIN);
 		}));
 	}
+
 	@Override
 	public int getOrder() {
-		
+		// TODO Auto-generated method stub
 		return 1;
 	}
 	
